@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dreambell Mplayer</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="style.css">
+    <!-- API de YouTube (Necesaria para audio sin video) -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+<body>
+    <div id="app_wallpaper"></div>
+
+    <!-- Contenedor del Reproductor de YouTube: ahora se moverá dinámicamente -->
+    <div id="ytplayer-container" style="position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: -1; pointer-events: none;">
+        <div id="ytplayer"></div>
+    </div>
+
+    <header>
+        <h3 style="letter-spacing: 2px; font-weight: 300;">DRIVE MUSIC</h3>
+        <!-- Buscador Centralizado y Dinámico -->
+        <input type="text" id="main_search_bar" class="search-bar" placeholder="Buscar en Drive..." oninput="handleSearchInput(this.value)" onkeydown="handleSearchKeydown(event)">
+        
+        <div class="profile-area">
+            <button id="auth_btn" onclick="handleAuth()">CONECTAR DRIVE</button>
+            
+            <div id="user_profile" class="user-profile" style="display: none;" onclick="toggleProfileMenu(event)">
+                <span id="user_name">Usuario</span>
+                <img id="user_photo" src="" alt="Avatar">
+                
+                <div id="profile_dropdown" class="profile-dropdown">
+                    <div class="dropdown-item" onclick="openThemeModal()">
+                        <span class="material-symbols-outlined">palette</span> Personalizar
+                    </div>
+                    <div class="dropdown-item" onclick="logout()">
+                        <span class="material-symbols-outlined">logout</span> Cerrar Sesión
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <aside>
+        <p style="font-size:11px; color:var(--text-muted); margin: 0 0 10px 5px; font-weight: bold; letter-spacing: 1px;">MI BIBLIOTECA</p>
+        <div class="nav-btn active" id="btn-library" onclick="showLibrary()"><span class="material-symbols-outlined">home</span>Inicio</div>
+        <div class="nav-btn" id="btn-favs" onclick="showFavorites()"><span class="material-symbols-outlined">favorite</span>Favoritos</div>
+        <div id="playlist_menu"></div>
+        <button onclick="openNewPlaylistModal()" class="btn-create-pl">+ Crear Playlist</button>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- SECCIÓN YOUTUBE -->
+        <p style="font-size:11px; color:var(--text-muted); margin: 15px 0 10px 5px; font-weight: bold; letter-spacing: 1px;">EXPLORAR</p>
+        <div class="nav-btn" id="btn-youtube" onclick="showYouTubeSearch()">
+            <span class="material-symbols-outlined" style="color: #ff4444;">youtube_activity</span>YouTube
+        </div>
+    </aside>
+
+    <main><div id="music_grid" class="grid"></div></main>
+
+    <div class="player">
+        <button class="icon-btn minimize-btn" onclick="minimizePlayer()"><span class="material-symbols-outlined">expand_more</span></button>
+        
+        <div class="player-info-immersive">
+            <h2 id="track_title_immersive">-</h2>
+            <p id="track_artist_immersive">Artista Desconocido</p>
+        </div>
+        
+        <!-- Contenedor para portada/video en modo inmersivo -->
+        <div class="immersive-cover-container" id="immersive_media_container">
+            <img id="current_cover_immersive" class="immersive-cover" src="" alt="Portada" onclick="openEditTrackModalForCurrent()" title="Editar Canción" style="cursor:pointer;">
+            <!-- El reproductor de YouTube se insertará aquí cuando sea necesario -->
+        </div>
+        
+        <div class="player-track-info-standard">
+            <div class="cover-wrapper" id="standard_media_container" onclick="openEditTrackModalForCurrent()" title="Editar Canción">
+                <img id="current_cover_standard" width="60" height="60" class="mini-cover">
+                <div class="cover-edit-overlay"><span class="material-symbols-outlined">edit</span></div>
+                <!-- El reproductor de YouTube se insertará aquí cuando sea necesario -->
+            </div>
+            
+            <div class="track-info-text" onclick="expandPlayer()" title="Expandir Reproductor">
+                <h4 id="track_title_standard">-</h4>
+                <p id="track_artist_standard" class="status-label">Artista Desconocido</p>
+            </div>
+            
+            <button class="icon-btn" onclick="expandPlayer()" title="Expandir Reproductor" style="margin-left: 10px;">
+                <span class="material-symbols-outlined">open_in_full</span>
+            </button>
+        </div>
+
+        <div class="controls">
+            <div class="ctrl-row">
+                <button id="shuffle_btn" class="icon-btn" onclick="toggleShuffle()" title="Aleatorio"><span class="material-symbols-outlined">shuffle</span></button>
+                <button class="icon-btn" onclick="playPrev()"><span class="material-symbols-outlined">skip_previous</span></button>
+                <button id="play_btn" class="icon-btn play-main" onclick="togglePlay()"><span class="material-symbols-outlined">play_arrow</span></button>
+                <button class="icon-btn" onclick="playNext()"><span class="material-symbols-outlined">skip_next</span></button>
+                <button id="repeat_btn" class="icon-btn" onclick="toggleRepeat()" title="Repetir"><span class="material-symbols-outlined">repeat</span></button>
+            </div>
+            <div class="progress-bar-container">
+                <span id="time_current">0:00</span>
+                <input type="range" id="prog" value="0" step="1" oninput="seekAudio(this.value)">
+                <span id="time_total">0:00</span>
+            </div>
+        </div>
+        <div class="volume-container">
+            <span class="material-symbols-outlined">volume_up</span>
+            <input type="range" min="0" max="1" step="0.1" value="0.8" class="vol-slider" oninput="setVolume(this.value)">
+        </div>
+    </div>
+
+    <div id="toast">
+        <span class="material-symbols-outlined" id="toast_icon">cloud_done</span>
+        <span id="toast_text">Sincronizado</span>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+
+    <!-- Modales (sin cambios relevantes) -->
+    <div id="picker_modal" class="glass-modal">
+        <h4 class="modal-header">Añadir a...</h4>
+        <div id="picker_list"></div>
+    </div>
+
+    <div id="create_modal" class="glass-modal">
+        <h4 class="modal-header">Nueva Playlist</h4>
+        <input type="text" id="modal_input" class="glass-input" placeholder="Nombre de la lista...">
+        <button onclick="saveNewPlaylist()" class="btn-accent" style="color:#000;">CREAR LISTA</button>
+    </div>
+
+    <div id="confirm_modal" class="glass-modal">
+        <h4 class="modal-header" id="confirm_title">¿Eliminar Playlist?</h4>
+        <p class="modal-msg" id="confirm_msg">Esta acción no se puede deshacer.</p>
+        <div class="btn-group">
+            <button onclick="closeAllModals()" class="btn-ghost">CANCELAR</button>
+            <button id="confirm_btn" class="btn-danger">ELIMINAR</button>
+        </div>
+    </div>
+
+    <!-- Modal de Personalización -->
+    <div id="theme_modal" class="glass-modal">
+        <h4 class="modal-header">Personalización</h4>
+        <p style="font-size:14px; margin-bottom:12px; color:var(--text-muted);">Fondo de Pantalla</p>
+        <div class="cover-upload-area" style="height: 100px; margin-bottom: 10px;" onclick="document.getElementById('wallpaper_file_input').click()">
+            <input type="file" id="wallpaper_file_input" accept="image/*" style="display:none;" onchange="handleWallpaperUpload(event)">
+            <img id="wallpaper_preview" src="" style="display:none;">
+            <div id="wallpaper_upload_placeholder" class="upload-placeholder">
+                <span class="material-symbols-outlined" style="font-size:30px;">wallpaper</span>
+                <p style="font-size:12px;">Subir Imagen</p>
+            </div>
+        </div>
+        <button onclick="removeWallpaper()" class="btn-ghost" style="width:100%; margin-bottom: 15px; padding: 10px; font-size:12px;">QUITAR FONDO</button>
+
+        <div id="blur_control_container" style="display: none; margin-bottom: 25px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-size:14px; color:var(--text-muted);">Nivel de Borrosidad</span>
+                <span id="blur_val_display" style="font-size:12px; color:var(--accent); font-weight:bold;">12px</span>
+            </div>
+            <input type="range" id="blur_slider" min="0" max="50" step="1" value="12" oninput="updateBlur(this.value)">
+        </div>
+
+        <p style="font-size:14px; margin-bottom:12px; color:var(--text-muted);">Apariencia</p>
+        <div style="display:flex; gap:10px; margin-bottom: 25px;">
+            <button class="theme-toggle-btn" id="btn_dark_mode" onclick="setTheme('dark')">
+                <span class="material-symbols-outlined">dark_mode</span> Oscuro
+            </button>
+            <button class="theme-toggle-btn" id="btn_light_mode" onclick="setTheme('light')">
+                <span class="material-symbols-outlined">light_mode</span> Claro
+            </button>
+        </div>
+
+        <p style="font-size:14px; margin-bottom:12px; color:var(--text-muted);">Color de Acento</p>
+        <div style="display:flex; gap:15px; justify-content:space-between; margin-bottom: 20px;">
+            <div class="theme-swatch" data-color="#1db954" style="background:#1db954" onclick="setAccent('#1db954', this)"></div>
+            <div class="theme-swatch" data-color="#0a84ff" style="background:#0a84ff" onclick="setAccent('#0a84ff', this)"></div>
+            <div class="theme-swatch" data-color="#bf5af2" style="background:#bf5af2" onclick="setAccent('#bf5af2', this)"></div>
+            <div class="theme-swatch" data-color="#ff375f" style="background:#ff375f" onclick="setAccent('#ff375f', this)"></div>
+            <div class="theme-swatch" data-color="#ff9f0a" style="background:#ff9f0a" onclick="setAccent('#ff9f0a', this)"></div>
+        </div>
+        <button onclick="closeAllModals()" class="btn-accent" style="color:#000;">Cerrar Panel</button>
+    </div>
+
+    <!-- Modal de Edición de Canción -->
+    <div id="edit_track_modal" class="glass-modal">
+        <h4 class="modal-header">Editar Información</h4>
+        <div class="cover-upload-area" onclick="document.getElementById('cover_file_input').click()">
+            <input type="file" id="cover_file_input" accept="image/*" style="display:none;" onchange="previewCover(event)">
+            <img id="cover_preview" src="" style="display:none;">
+            <div id="cover_upload_placeholder" class="upload-placeholder">
+                <span class="material-symbols-outlined" style="font-size:40px;">add_photo_alternate</span>
+                <p>Cambiar Portada</p>
+            </div>
+        </div>
+        <input type="text" id="edit_title_input" class="glass-input" placeholder="Título de la canción...">
+        <input type="text" id="edit_artist_input" class="glass-input" placeholder="Nombre del artista..." style="margin-bottom: 25px;">
+        <div class="btn-group">
+            <button onclick="resetTrackInfo()" class="btn-ghost">RESTAURAR</button>
+            <button onclick="saveTrackInfo()" class="btn-accent" style="color:#000;">GUARDAR</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+</body>
+</html>
