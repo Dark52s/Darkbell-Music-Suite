@@ -281,8 +281,3 @@ body.light-mode .user-profile { background: rgba(255,255,255,0.8); border: 1px s
     color: #666;
     letter-spacing: 1px;
 }
-.immersive-cover-container .yt-video-embed {
-    border-radius: 20px;
-    box-shadow: 0 20px 80px rgba(0,0,0,0.7);
-    border: 2px solid rgba(255,255,255,0.1);
-}
