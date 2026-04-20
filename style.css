@@ -302,3 +302,239 @@ body.light-mode .user-profile { background: rgba(255,255,255,0.8); border: 1px s
 .legal-separator {
     color: #555;
 }
+/* ===== RESPONSIVE DESIGN PARA MÓVILES ===== */
+@media screen and (max-width: 768px) {
+    body {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto 1fr auto !important;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Cabecera */
+    header {
+        grid-column: 1 / -1;
+        padding: 0 15px;
+        height: 60px;
+        flex-wrap: wrap;
+    }
+    header h3 {
+        font-size: 16px;
+        letter-spacing: 1px;
+    }
+    .search-bar {
+        width: 180px;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    .user-profile {
+        padding: 3px 3px 3px 10px;
+    }
+    .user-profile span {
+        display: none; /* Oculta el nombre en móvil para ahorrar espacio */
+    }
+    .user-profile img {
+        width: 30px;
+        height: 30px;
+    }
+
+    /* Barra lateral (aside) */
+    aside {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
+        height: auto;
+        padding: 10px 15px;
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0,0,0,0.3);
+        backdrop-filter: blur(var(--glass-blur));
+    }
+    aside p {
+        display: none; /* Ocultamos los títulos "MI BIBLIOTECA" y "EXPLORAR" */
+    }
+    .nav-btn {
+        display: inline-flex;
+        padding: 8px 14px;
+        margin-bottom: 0;
+        font-size: 12px;
+        white-space: nowrap;
+        background: rgba(255,255,255,0.03);
+        border-radius: 20px;
+        flex-shrink: 0;
+    }
+    .nav-btn .delete-pl {
+        display: none; /* Ocultamos el botón de eliminar playlist en móvil por espacio */
+    }
+    .btn-create-pl {
+        display: inline-flex;
+        width: auto;
+        margin-top: 0;
+        margin-left: 5px;
+        padding: 8px 15px;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+    .sidebar-divider {
+        display: none;
+    }
+    #playlist_menu {
+        display: contents; /* Para que las playlists se muestren en línea */
+    }
+
+    /* Contenido principal */
+    main {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        padding: 15px;
+        overflow-y: auto;
+    }
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    .card {
+        padding: 10px;
+        border-radius: 14px;
+    }
+    .card h3 {
+        font-size: 12px;
+    }
+    .card p {
+        font-size: 10px;
+    }
+    .yt-badge {
+        top: 8px;
+        left: 8px;
+        font-size: 8px;
+        padding: 2px 6px;
+    }
+
+    /* Reproductor */
+    .player {
+        grid-column: 1 / -1;
+        grid-row: 4;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        padding: 12px 15px;
+        height: auto;
+        min-height: 130px;
+        gap: 8px;
+    }
+    .player-track-info-standard {
+        justify-content: flex-start;
+    }
+    .cover-wrapper {
+        width: 48px;
+        height: 48px;
+    }
+    #track_title_standard {
+        font-size: 13px;
+    }
+    .status-label {
+        font-size: 10px;
+    }
+    .controls {
+        width: 100%;
+        gap: 5px;
+    }
+    .ctrl-row {
+        gap: 15px;
+    }
+    .play-main {
+        font-size: 36px !important;
+    }
+    .progress-bar-container {
+        font-size: 10px;
+    }
+    .volume-container {
+        display: none; /* Ocultamos volumen en móvil por espacio (puede ajustarse con gestos del sistema) */
+    }
+    .minimize-btn {
+        top: 10px;
+        left: 15px;
+        font-size: 24px;
+    }
+
+    /* Modo expandido en móvil */
+    body.player-expanded {
+        grid-template-rows: 60px 0px 1fr !important;
+    }
+    body.player-expanded .player {
+        grid-template-rows: auto 1fr auto;
+        padding: 20px 15px;
+    }
+    body.player-expanded .immersive-cover-container {
+        margin-top: 0;
+    }
+    .immersive-cover {
+        width: 70vw;
+        height: 70vw;
+        max-width: 300px;
+        max-height: 300px;
+    }
+    body.player-expanded .controls {
+        width: 100%;
+    }
+    body.player-expanded .player-info-immersive h2 {
+        font-size: 20px;
+    }
+    body.player-expanded .player-info-immersive p {
+        font-size: 14px;
+    }
+
+    /* Toast */
+    #toast {
+        bottom: 140px;
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+
+    /* Modales */
+    .glass-modal {
+        width: 90%;
+        max-width: 320px;
+        padding: 20px;
+    }
+    .modal-header {
+        font-size: 16px;
+    }
+    .btn-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* Landing page */
+    .landing-card {
+        max-width: 90%;
+        padding: 30px 20px;
+    }
+    .landing-logo {
+        width: 90px;
+        height: 90px;
+    }
+    .landing-title {
+        font-size: 32px;
+    }
+    .landing-description {
+        font-size: 14px;
+    }
+    .landing-transparency {
+        padding: 12px 15px;
+        font-size: 12px;
+    }
+    .landing-login-btn {
+        padding: 14px 20px;
+        font-size: 16px;
+    }
+    .landing-legal {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+}
