@@ -37,7 +37,7 @@ function onYouTubeIframeAPIReady() {
             'disablekb': 1,
             'fs': 0,
             'modestbranding': 1,
-            'origin': window.location.origin,
+            'origin': 'https://dark52s.github.io',   // ← Dominio exacto de despliegue
             'playsinline': 1,
             'rel': 0,
             'showinfo': 0
@@ -227,7 +227,7 @@ function applyWallpaper() {
     }
 }
 
-// --- AUTH (sin cambios) ---
+// --- AUTH (con control de landing) ---
 function gisLoaded() {
     tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID, scope: SCOPES,
@@ -237,7 +237,18 @@ function gisLoaded() {
             initApp(); 
         },
     });
-    if(accessToken) initApp();
+    if(accessToken) {
+        // Si ya hay token, ocultamos landing y mostramos la app
+        document.getElementById('landing').style.display = 'none';
+        document.getElementById('main_app').style.display = 'contents';
+        document.body.style.display = 'grid';
+        initApp();
+    } else {
+        // Sin token: mostramos landing y ocultamos app
+        document.getElementById('landing').style.display = 'flex';
+        document.getElementById('main_app').style.display = 'none';
+        document.body.style.display = 'block';
+    }
 }
 
 async function initApp() {
@@ -246,13 +257,20 @@ async function initApp() {
         if(!userResp.ok) throw new Error('Token expirado');
         const data = await userResp.json();
         
+        // Ocultar landing y mostrar app principal (por si acaso)
+        document.getElementById('landing').style.display = 'none';
+        document.getElementById('main_app').style.display = 'contents';
+        document.body.style.display = 'grid';
+        
         document.getElementById('auth_btn').style.display = 'none';
         document.getElementById('user_profile').style.display = 'flex';
         document.getElementById('user_name').innerText = data.given_name || data.name;
         document.getElementById('user_photo').src = data.picture;
         
         initCloudStorage();
-    } catch(e) { logout(); }
+    } catch(e) { 
+        logout(); 
+    }
 }
 
 function logout() {
@@ -270,7 +288,9 @@ window.addEventListener('click', () => {
     if(menu) menu.classList.remove('show');
 });
 
-function handleAuth() { tokenClient.requestAccessToken({ prompt: 'consent' }); }
+function handleAuth() { 
+    tokenClient.requestAccessToken({ prompt: 'consent' }); 
+}
 
 // --- DRIVE (sin cambios) ---
 function notify(text, icon = "cloud_done") {
@@ -361,15 +381,12 @@ function render(files) {
 // --- BUSCADOR YOUTUBE Y DRIVE (MODIFICADO) ---
 let ytSearchTimeout = null;
 
-// Ahora handleSearchInput solo filtra en Drive; no hace nada en YouTube
 function handleSearchInput(q) {
     if (currentView !== 'youtube') {
-        search(q); // Filtrado local para Drive
+        search(q);
     }
-    // En YouTube no se hace nada mientras se escribe
 }
 
-// Manejador de tecla para el campo de búsqueda
 function handleSearchKeydown(event) {
     if (event.key === 'Enter') {
         const q = event.target.value.trim();
@@ -380,7 +397,7 @@ function handleSearchKeydown(event) {
             }
             searchYouTube(q);
         } else {
-            search(q); // Para Drive, también se puede buscar con Enter
+            search(q);
         }
     }
 }
@@ -397,7 +414,8 @@ function search(q) {
 async function searchYouTube(query) {
     document.getElementById('music_grid').innerHTML = '<div style="color:var(--text-muted); width:100%; text-align:center; margin-top:50px;">Buscando en YouTube...</div>';
     try {
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&key=${YOUTUBE_API_KEY}`);
+        // Se agregan videoSyndicated y videoEmbeddable para filtrar solo videos que permiten reproducción externa
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&videoSyndicated=true&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
         if (!res.ok) throw new Error('API Error');
         const data = await res.json();
         
@@ -695,13 +713,8 @@ async function loadAndPlay(file) {
         document.getElementById('track_title_immersive').innerText = file.name;
         document.getElementById('track_artist_immersive').innerText = file.artist;
         
-        // No cargamos cover como imagen, se muestra el video
-        // Pero podríamos precargar miniatura por si acaso
-        // loadCover(file.id, file.name, true, file.cover); // Ya no necesario
-        
         if(ytPlayer && ytPlayer.loadVideoById) {
             ytPlayer.loadVideoById(file.id);
-            // El volumen se aplica en onReady, pero aseguramos
             setTimeout(() => setVolume(audio.volume), 500);
         }
     } else {
@@ -779,7 +792,6 @@ function toggleRepeat() {
 
 function handleTrackEnd() {
     if (repeatMode === 2) { 
-        // Repetir actual
         const isYT = playbackQueue[currentIndex]?.source === 'youtube';
         if (isYT) { if(ytPlayer) ytPlayer.seekTo(0); ytPlayer.playVideo(); }
         else { audio.currentTime = 0; audio.play(); }
@@ -830,7 +842,6 @@ function setActiveNav(el) {
 // --- EXPANDIR/MINIMIZAR (se actualiza para reubicar video si es YT) ---
 function expandPlayer() {
     document.body.classList.add('player-expanded');
-    // Si la canción actual es de YouTube, mover el reproductor al contenedor inmersivo
     if (playbackQueue[currentIndex]?.source === 'youtube') {
         relocateYouTubePlayer(true);
     }
